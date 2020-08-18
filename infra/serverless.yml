@@ -1,0 +1,21 @@
+service: api-example-class-infra
+
+provider:
+  name: aws
+  runtime: python3.8
+  stage: ${self:custom.stage}
+  cfnRole: arn:aws:iam::${self:custom.config.${self:custom.stage}.account_id}:role/EmmAWSCloudFormationExecutionRole # ARN of an IAM role for CloudFormation service. If specified, CloudFormation uses the role's credentials
+
+custom:
+  stage: ${opt:env}
+  config:
+    stg:
+      memory_size: 128
+      account_id: '723706874016'
+
+    prd:
+      memory_size: 256
+      account_id: '' #to be defined
+
+resources:
+- ${file(dynamodb.yml)}

@@ -1,0 +1,16 @@
+Resources:
+    ScansDynamoDBTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        AttributeDefinitions:
+          -
+            AttributeName: asin
+            AttributeType: S
+        KeySchema:
+          -
+            AttributeName: asin
+            KeyType: HASH
+        ProvisionedThroughput: 
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        TableName: api-example-items-table-${self:custom.stage}
