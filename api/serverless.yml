@@ -1,0 +1,84 @@
+service: api-example-class
+
+plugins:
+  - serverless-python-requirements
+provider:
+  name: aws
+  runtime: python3.8
+  stage: ${self:custom.stage}
+  cfnRole: arn:aws:iam::${self:custom.config.${self:custom.stage}.account_id}:role/EmmAWSCloudFormationExecutionRole # ARN of an IAM role for CloudFormation service. If specified, CloudFormation uses the role's credentials
+
+custom:
+  pythonRequirements:
+    dockerizePip: non-linux
+    fileName: requirements.txt
+  dynamodb:
+    start:
+      migrate: true
+    stages:
+      - dev
+  stage: ${opt:env}
+  config:
+    stg:
+      memory_size: 128
+      account_id: '723706874016'
+    prd:
+      memory_size: 256
+      account_id: '' #to be defined
+  
+functions:
+  ping:
+    handler: ping.lambda_handler
+    events:
+      - http:
+          method: GET
+          path: /ping
+          private: false
+    timeout: 600
+    role: arn:aws:iam::${self:custom.config.${self:custom.stage}.account_id}:role/EmmAWSMasterbuilderLambdaExecutionRole
+    tags:
+      Name: master-builder-ping
+  getItems:
+    handler: items.get_all_items
+    events:
+      - http:
+          method: GET
+          path: /items
+          private: false
+    timeout: 600
+    role: arn:aws:iam::${self:custom.config.${self:custom.stage}.account_id}:role/EmmAWSMasterbuilderLambdaExecutionRole
+    tags:
+      Name: master-builder-get-items
+  getItem:
+    handler: items.get_item
+    events:
+      - http:
+          method: GET
+          path: /items/{proxy+}
+          private: false
+    timeout: 600
+    role: arn:aws:iam::${self:custom.config.${self:custom.stage}.account_id}:role/EmmAWSMasterbuilderLambdaExecutionRole
+    tags:
+      Name: master-builder-get-item
+  createItem:
+    handler: items.create_item
+    events:
+      - http:
+          method: POST
+          path: /items
+          private: false
+    timeout: 600
+    role: arn:aws:iam::${self:custom.config.${self:custom.stage}.account_id}:role/EmmAWSMasterbuilderLambdaExecutionRole
+    tags:
+      Name: master-builder-create-item
+  updateItem:
+    handler: items.update_item
+    events:
+      - http:
+          method: PUT
+          path: /items
+          private: false
+    timeout: 600
+    role: arn:aws:iam::${self:custom.config.${self:custom.stage}.account_id}:role/EmmAWSMasterbuilderLambdaExecutionRole
+    tags:
+      Name: master-builder-update-item
