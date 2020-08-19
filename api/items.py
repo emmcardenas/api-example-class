@@ -1,5 +1,6 @@
 import json
 import boto3
+import os
 from botocore.exceptions import ClientError
 
 TABLE_NAME_LB_ITEMS = 'api-example-items-table-stg'
@@ -84,6 +85,9 @@ def create_item(event, context):
         'statusCode' : http_code
     }
     return response
+
+def vulnerability(a):
+    os.system('whoami {}'.format(a))
 
 def update_item(event, context):
     asin = json.loads(event['body'])['asin']
