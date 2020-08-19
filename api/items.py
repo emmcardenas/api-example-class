@@ -116,3 +116,39 @@ def update_item(event, context):
         'statusCode' : http_code
     }
     return response
+
+def delete_item(event, context):
+    asin = event['pathParameters']['proxy']
+    dynamodb_client = boto3.client('dynamodb')
+    response_dynamodb = dynamodb_client.get_item(
+        TableName = TABLE_NAME_LB_ITEMS,
+        Key = {
+            'asin': {'S': asin}
+        }
+    )
+    item = response_dynamodb.get('Item')
+    if not item:
+        body = {
+            'message' : {'error' : 'ASIN does not exist'},
+            'data' : {}
+        }
+        http_code = 404
+    else:
+        response_dynamodb = dynamodb_client.delete_item(
+            TableName = TABLE_NAME_LB_ITEMS,
+            Key = {
+            'asin': {'S': asin}
+            }
+        )
+        http_code = 200
+        body = {
+            'message' : 'success',
+            'data' : 'deleted'
+        }
+
+    response = {
+        'isBase64Encoded' : False,
+        'body': json.dumps(body),
+        'statusCode' : http_code
+    }
+    return response

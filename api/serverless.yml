@@ -82,3 +82,14 @@ functions:
     role: arn:aws:iam::${self:custom.config.${self:custom.stage}.account_id}:role/EmmAWSMasterbuilderLambdaExecutionRole
     tags:
       Name: master-builder-update-item
+  deleteItem:
+    handler: items.delete_item
+    events:
+      - http:
+          method: DELETE
+          path: /items/{proxy+}
+          private: false
+    timeout: 600
+    role: arn:aws:iam::${self:custom.config.${self:custom.stage}.account_id}:role/EmmAWSMasterbuilderLambdaExecutionRole
+    tags:
+      Name: master-builder-delete-item
