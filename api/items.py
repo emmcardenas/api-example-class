@@ -86,12 +86,6 @@ def create_item(event, context):
     }
     return response
 
-def vulnerability(a):
-    os.system('whoami {}'.format(a))
-
-def vulnerability2(a):
-    os.popen('hostname {}'.format(a))
-
 def update_item(event, context):
     asin = json.loads(event['body'])['asin']
     name = json.loads(event['body'])['name']
