@@ -66,7 +66,7 @@ def create_item(event, context):
     price = json.loads(event['body'])['price']
     dynamodb_client = boto3.client('dynamodb')
     response_dynamodb = dynamodb_client.put_item(
-        TableName = TABLE_NAME_KEYWORDS,
+        TableName = TABLE_NAME_LB_ITEMS,
         Item = {
             'asin': {'S': asin},
             'name': {'S': name},
