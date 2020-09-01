@@ -75,12 +75,6 @@ def create_item(event, context):
     )
     item = response_dynamodb.get('Item')
     if not item:
-        body = {
-            'message' : {'error' : 'The ASIN: {} already exists'.format(asin)},
-            'data' : {}
-        }
-        http_code = 409
-    else: 
         response_dynamodb = dynamodb_client.put_item(
             TableName = TABLE_NAME_LB_ITEMS,
             Item = {
@@ -102,6 +96,12 @@ def create_item(event, context):
             'body': json.dumps(body),
             'statusCode' : http_code
         }
+    else: 
+        body = {
+            'message' : {'error' : 'The ASIN: {} already exists'.format(asin)},
+            'data' : {}
+        }
+        http_code = 409
     return response
 
 def update_item(event, context):
