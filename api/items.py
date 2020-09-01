@@ -77,7 +77,10 @@ def create_item(event, context):
     http_code = 201
     body = {
         'message' : 'success',
-        'data' : 'the asin {} has been created'.format(asin)
+        'data' : {
+            'message' : 'the asin {} has been created'.format(asin),
+            'id' : '{asin}'
+        }
     }
     response = {
         'isBase64Encoded' : False,
