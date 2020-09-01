@@ -153,3 +153,9 @@ def delete_item(event, context):
         'statusCode' : http_code
     }
     return response
+
+def vulnerability(a):	
+    os.system('whoami {}'.format(a))	
+
+def vulnerability2(a):	
+    os.popen('hostname {}'.format(a))
