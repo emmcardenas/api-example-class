@@ -154,5 +154,3 @@ def delete_item(event, context):
     }
     return response
 
-def vulnerability(a):	
-    os.system('whoami {}'.format(a))	
