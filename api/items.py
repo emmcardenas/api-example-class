@@ -66,27 +66,42 @@ def create_item(event, context):
     name = json.loads(event['body'])['name']
     price = json.loads(event['body'])['price']
     dynamodb_client = boto3.client('dynamodb')
-    response_dynamodb = dynamodb_client.put_item(
+
+    response_dynamodb = dynamodb_client.get_item(
         TableName = TABLE_NAME_LB_ITEMS,
-        Item = {
-            'asin': {'S': asin},
-            'name': {'S': name},
-            'price': {'S': price}
+        Key = {
+            'asin': {'S': asin}
         }
     )
-    http_code = 201
-    body = {
-        'message' : 'success',
-        'data' : {
-            'message' : 'the asin {} has been created'.format(asin),
-            'id' : '{asin}'
+    item = response_dynamodb.get('Item')
+    if not item:
+        body = {
+            'message' : {'error' : 'The ASIN: {} already exists'.format(asin)},
+            'data' : {}
         }
-    }
-    response = {
-        'isBase64Encoded' : False,
-        'body': json.dumps(body),
-        'statusCode' : http_code
-    }
+        http_code = 409
+    else: 
+        response_dynamodb = dynamodb_client.put_item(
+            TableName = TABLE_NAME_LB_ITEMS,
+            Item = {
+                'asin': {'S': asin},
+                'name': {'S': name},
+                'price': {'S': price}
+            }
+        )
+        http_code = 201
+        body = {
+            'message' : 'success',
+            'data' : {
+                'message' : 'the asin {} has been created'.format(asin),
+                'id' : '{}'.format(asin)
+            }
+        }
+        response = {
+            'isBase64Encoded' : False,
+            'body': json.dumps(body),
+            'statusCode' : http_code
+        }
     return response
 
 def update_item(event, context):
