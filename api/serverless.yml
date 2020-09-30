@@ -19,6 +19,8 @@ custom:
       - dev
   stage: ${opt:env}
   config:
+    dev:
+      account_id: ''
     stg:
       memory_size: 128
       account_id: '723706874016'
