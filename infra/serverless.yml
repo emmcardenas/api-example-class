@@ -15,7 +15,7 @@ custom:
 
     prd:
       memory_size: 256
-      account_id: '' #to be defined
+      account_id: '691789668597' #to be defined
 
 resources:
 - ${file(dynamodb.yml)}
