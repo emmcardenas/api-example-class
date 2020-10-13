@@ -172,6 +172,3 @@ def delete_item(event, context):
     }
     return response
 
-def example:
-    return 'hola'
-
