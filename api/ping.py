@@ -15,7 +15,7 @@ def ping2(event, context):
     response = {
         'isBase64Encoded' : False,
         'body': json.dumps({'message' : 'success',
-                            'data' : 'pong2'
+                            'data' : 'pong3'
         }),
         'statusCode' : 200
     }
