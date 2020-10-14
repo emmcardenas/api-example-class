@@ -1,0 +1,13 @@
+Resources:
+  PoCInstance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: ${self:custom.config.${self:custom.stage}.instance_type}
+      KeyName: ${self:custom.config.${self:custom.stage}.key_pair}
+      DisableApiTermination: ${self:custom.config.${self:custom.stage}.termination_protection}
+      SecurityGroupIds:
+      - ${self:custom.config.${self:custom.stage}.sg_id}
+      SubnetId: ${self:custom.config.${self:custom.stage}.subnet_id}
+      Tags:
+      - Key: environment
+        Value: ${self:custom.stage}

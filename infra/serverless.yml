@@ -12,10 +12,22 @@ custom:
     stg:
       memory_size: 128
       account_id: '723706874016'
+      instance_type: t3.small
+      key_pair: poc_stg
+      termination_protection: false
+      sg_id: sg-099662c769d60f2a4
+      subnet_id: subnet-03c3790783ba56549
 
     prd:
       memory_size: 256
-      account_id: '691789668597' #to be defined
+      account_id: '691789668597'
+      instance_type: t3.large
+      key_pair: poc_prd
+      termination_protection: true
+      sg_id: sg-0e9a7ef0d282df521
+      subnet_id: subnet-02526f4f2d7a403a0
+
 
 resources:
 - ${file(dynamodb.yml)}
+- ${file(ec2.yml)}
