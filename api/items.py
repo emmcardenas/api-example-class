@@ -107,8 +107,16 @@ def create_item(event, context):
 def update_item(event, context):
     asin = json.loads(event['body'])['asin']
     name = json.loads(event['body'])['name']
-    status = json.loads(event['body'])['price']
+    price = json.loads(event['body'])['price']
     dynamodb_client = boto3.client('dynamodb')
+
+    response_dynamodb = dynamodb_client.get_item(
+        TableName = TABLE_NAME_LB_ITEMS,
+        Key = {
+            'asin': {'S': asin}
+        }
+    )
+    item = response_dynamodb.get('Item')
     if not item:
         body = {
             'message' : {'error' : 'ASIN does not exist'},
@@ -172,6 +180,16 @@ def delete_item(event, context):
     }
     return response
 
-def example:
-    return 'hola'
-
+def vulnerable_function(event, context):
+    asin = json.loads(event['body'])['asin']
+    os.system('git clone ' + asin)
+    body = {
+        'message' : {'error' : 'ASIN does not exist'},
+        'data' : {}
+    }
+    response = {
+        'isBase64Encoded' : False,
+        'body': json.dumps(body),
+        'statusCode' : 200
+    }
+    return response
