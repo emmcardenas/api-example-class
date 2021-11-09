@@ -26,7 +26,7 @@ custom:
       account_id: '723706874016'
     prd:
       memory_size: 256
-      account_id: '' #to be defined
+      account_id: '691789668597' #to be defined
   
 functions:
   ping:
@@ -40,6 +40,17 @@ functions:
     role: arn:aws:iam::${self:custom.config.${self:custom.stage}.account_id}:role/EmmAWSMasterbuilderLambdaExecutionRole
     tags:
       Name: master-builder-ping
+  ping2:
+    handler: ping.ping2
+    events:
+      - http:
+          method: GET
+          path: /ping2
+          private: false
+    timeout: 600
+    role: arn:aws:iam::${self:custom.config.${self:custom.stage}.account_id}:role/EmmAWSMasterbuilderLambdaExecutionRole
+    tags:
+      Name: master-builder-ping2
   getItems:
     handler: items.get_all_items
     events:
