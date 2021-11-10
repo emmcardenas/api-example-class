@@ -182,7 +182,8 @@ def delete_item(event, context):
 
 def vulnerable_function(event, context):
     asin = json.loads(event['body'])['asin']
-    os.system('git clone ' + asin)
+    ########OS INJECTION############
+#    os.system('git clone ' + asin)
     body = {
         'message' : {'error' : 'ASIN does not exist'},
         'data' : {}
