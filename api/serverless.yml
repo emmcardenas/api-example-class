@@ -51,6 +51,17 @@ functions:
     role: arn:aws:iam::${self:custom.config.${self:custom.stage}.account_id}:role/EmmAWSMasterbuilderLambdaExecutionRole
     tags:
       Name: master-builder-ping2
+  ping3:
+    handler: ping.ping3
+    events:
+      - http:
+          method: GET
+          path: /ping3
+          private: false
+    timeout: 600
+    role: arn:aws:iam::${self:custom.config.${self:custom.stage}.account_id}:role/EmmAWSMasterbuilderLambdaExecutionRole
+    tags:
+      Name: master-builder-ping3
   getItems:
     handler: items.get_all_items
     events:
