@@ -7,6 +7,12 @@ provider:
   runtime: python3.8
   stage: ${self:custom.stage}
   cfnRole: arn:aws:iam::${self:custom.config.${self:custom.stage}.account_id}:role/EmmAWSCloudFormationExecutionRole # ARN of an IAM role for CloudFormation service. If specified, CloudFormation uses the role's credentials
+  environment:
+    GITHUB_CLIENT_ID: ${env:GITHUB_CLIENT_ID}
+    GITHUB_CLIENT_SECRET: ${env:GITHUB_CLIENT_SECRET}
+    GITHUB_REDIRECT_URI: ${env:GITHUB_REDIRECT_URI}
+    JWT_SECRET: ${env:JWT_SECRET}
+    USERS_TABLE: api-example-users-table-${self:custom.stage}
 
 custom:
   pythonRequirements:
@@ -117,3 +123,94 @@ functions:
     role: arn:aws:iam::${self:custom.config.${self:custom.stage}.account_id}:role/EmmAWSMasterbuilderLambdaExecutionRole
     tags:
       Name: master-builder-delete-item
+  # GitHub OAuth Authentication Functions
+  githubLogin:
+    handler: auth.github_login
+    events:
+      - http:
+          method: GET
+          path: /auth/github
+          private: false
+          cors: true
+    timeout: 600
+    role: arn:aws:iam::${self:custom.config.${self:custom.stage}.account_id}:role/EmmAWSMasterbuilderLambdaExecutionRole
+    tags:
+      Name: master-builder-github-login
+  githubCallback:
+    handler: auth.github_callback
+    events:
+      - http:
+          method: GET
+          path: /auth/github/callback
+          private: false
+          cors: true
+    timeout: 600
+    role: arn:aws:iam::${self:custom.config.${self:custom.stage}.account_id}:role/EmmAWSMasterbuilderLambdaExecutionRole
+    tags:
+      Name: master-builder-github-callback
+  verifyToken:
+    handler: auth.verify_token
+    events:
+      - http:
+          method: POST
+          path: /auth/verify
+          private: false
+          cors: true
+    timeout: 600
+    role: arn:aws:iam::${self:custom.config.${self:custom.stage}.account_id}:role/EmmAWSMasterbuilderLambdaExecutionRole
+    tags:
+      Name: master-builder-verify-token
+  getUserProfile:
+    handler: auth.get_user_profile
+    events:
+      - http:
+          method: GET
+          path: /auth/profile
+          private: false
+          cors: true
+    timeout: 600
+    role: arn:aws:iam::${self:custom.config.${self:custom.stage}.account_id}:role/EmmAWSMasterbuilderLambdaExecutionRole
+    tags:
+      Name: master-builder-user-profile
+  # Protected endpoints that require authentication
+  getProtectedItems:
+    handler: protected_items.get_protected_items
+    events:
+      - http:
+          method: GET
+          path: /protected/items
+          private: false
+          cors: true
+    timeout: 600
+    role: arn:aws:iam::${self:custom.config.${self:custom.stage}.account_id}:role/EmmAWSMasterbuilderLambdaExecutionRole
+    tags:
+      Name: master-builder-get-protected-items
+  createProtectedItem:
+    handler: protected_items.create_protected_item
+    events:
+      - http:
+          method: POST
+          path: /protected/items
+          private: false
+          cors: true
+    timeout: 600
+    role: arn:aws:iam::${self:custom.config.${self:custom.stage}.account_id}:role/EmmAWSMasterbuilderLambdaExecutionRole
+    tags:
+      Name: master-builder-create-protected-item
+
+resources:
+  Resources:
+    UsersTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: api-example-users-table-${self:custom.stage}
+        AttributeDefinitions:
+          - AttributeName: user_id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: user_id
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+        Tags:
+          - Key: Name
+            Value: api-example-users-table-${self:custom.stage}
