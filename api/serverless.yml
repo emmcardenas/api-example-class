@@ -7,6 +7,11 @@ provider:
   runtime: python3.8
   stage: ${self:custom.stage}
   cfnRole: arn:aws:iam::${self:custom.config.${self:custom.stage}.account_id}:role/EmmAWSCloudFormationExecutionRole # ARN of an IAM role for CloudFormation service. If specified, CloudFormation uses the role's credentials
+  environment:
+    GITHUB_CLIENT_ID: ${env:GITHUB_CLIENT_ID}
+    GITHUB_CLIENT_SECRET: ${env:GITHUB_CLIENT_SECRET}
+    GITHUB_REDIRECT_URI: ${env:GITHUB_REDIRECT_URI}
+    JWT_SECRET: ${env:JWT_SECRET}
 
 custom:
   pythonRequirements:
@@ -29,6 +34,59 @@ custom:
       account_id: '691789668597' #to be defined
   
 functions:
+  # Authentication endpoints
+  githubLogin:
+    handler: auth.github_login
+    events:
+      - http:
+          method: GET
+          path: /auth/github
+          private: false
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - Authorization
+            allowCredentials: false
+    timeout: 600
+    role: arn:aws:iam::${self:custom.config.${self:custom.stage}.account_id}:role/EmmAWSMasterbuilderLambdaExecutionRole
+    tags:
+      Name: master-builder-github-login
+  githubCallback:
+    handler: auth.github_callback
+    events:
+      - http:
+          method: GET
+          path: /auth/github/callback
+          private: false
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - Authorization
+            allowCredentials: false
+    timeout: 600
+    role: arn:aws:iam::${self:custom.config.${self:custom.stage}.account_id}:role/EmmAWSMasterbuilderLambdaExecutionRole
+    tags:
+      Name: master-builder-github-callback
+  getUserProfile:
+    handler: auth.get_user_profile
+    events:
+      - http:
+          method: GET
+          path: /auth/profile
+          private: false
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - Authorization
+            allowCredentials: false
+    timeout: 600
+    role: arn:aws:iam::${self:custom.config.${self:custom.stage}.account_id}:role/EmmAWSMasterbuilderLambdaExecutionRole
+    tags:
+      Name: master-builder-user-profile
+  # Existing endpoints
   ping:
     handler: ping.lambda_handler
     events:
@@ -69,6 +127,12 @@ functions:
           method: GET
           path: /items
           private: false
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - Authorization
+            allowCredentials: false
     timeout: 600
     role: arn:aws:iam::${self:custom.config.${self:custom.stage}.account_id}:role/EmmAWSMasterbuilderLambdaExecutionRole
     tags:
@@ -80,39 +144,63 @@ functions:
           method: GET
           path: /items/{proxy+}
           private: false
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - Authorization
+            allowCredentials: false
     timeout: 600
     role: arn:aws:iam::${self:custom.config.${self:custom.stage}.account_id}:role/EmmAWSMasterbuilderLambdaExecutionRole
     tags:
       Name: master-builder-get-item
   createItem:
-    handler: items.create_item
+    handler: items.create_item_protected
     events:
       - http:
           method: POST
           path: /items
           private: false
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - Authorization
+            allowCredentials: false
     timeout: 600
     role: arn:aws:iam::${self:custom.config.${self:custom.stage}.account_id}:role/EmmAWSMasterbuilderLambdaExecutionRole
     tags:
       Name: master-builder-create-item
   updateItem:
-    handler: items.update_item
+    handler: items.update_item_protected
     events:
       - http:
           method: PUT
           path: /items
           private: false
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - Authorization
+            allowCredentials: false
     timeout: 600
     role: arn:aws:iam::${self:custom.config.${self:custom.stage}.account_id}:role/EmmAWSMasterbuilderLambdaExecutionRole
     tags:
       Name: master-builder-update-item
   deleteItem:
-    handler: items.delete_item
+    handler: items.delete_item_protected
     events:
       - http:
           method: DELETE
           path: /items/{proxy+}
           private: false
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - Authorization
+            allowCredentials: false
     timeout: 600
     role: arn:aws:iam::${self:custom.config.${self:custom.stage}.account_id}:role/EmmAWSMasterbuilderLambdaExecutionRole
     tags:
