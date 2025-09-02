@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub OAuth Example Client</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .auth-section, .api-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .auth-section {
+            background-color: #f8f9fa;
+        }
+        .api-section {
+            background-color: #fff3cd;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        .github-btn {
+            background-color: #333;
+        }
+        .github-btn:hover {
+            background-color: #24292e;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            box-sizing: border-box;
+        }
+        .response {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 3px;
+            padding: 10px;
+            margin: 10px 0;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .user-info {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 3px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        .error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>GitHub OAuth API Example</h1>
+        <p>This example demonstrates how to use the GitHub OAuth authentication with the API.</p>
+        
+        <!-- Configuration Section -->
+        <div class="auth-section">
+            <h2>Configuration</h2>
+            <label for="apiUrl">API Base URL:</label>
+            <input type="text" id="apiUrl" placeholder="https://your-api-domain.com" value="https://your-api-domain.com">
+            <small>Enter your deployed API base URL</small>
+        </div>
+
+        <!-- Authentication Section -->
+        <div class="auth-section">
+            <h2>Authentication</h2>
+            <div id="loginSection">
+                <p>Click the button below to authenticate with GitHub:</p>
+                <button class="github-btn" onclick="loginWithGitHub()">Login with GitHub</button>
+            </div>
+            
+            <div id="userSection" class="hidden">
+                <div class="user-info">
+                    <h3>Logged in as:</h3>
+                    <div id="userInfo"></div>
+                    <button onclick="logout()">Logout</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- API Testing Section -->
+        <div class="api-section">
+            <h2>API Testing</h2>
+            <p>Test the protected endpoints (requires authentication):</p>
+            
+            <h3>Create Item</h3>
+            <input type="text" id="createAsin" placeholder="ASIN (e.g., B123456789)">
+            <input type="text" id="createName" placeholder="Product Name">
+            <input type="text" id="createPrice" placeholder="Price">
+            <button onclick="createItem()" id="createBtn" disabled>Create Item</button>
+            
+            <h3>Update Item</h3>
+            <input type="text" id="updateAsin" placeholder="ASIN to update">
+            <input type="text" id="updateName" placeholder="New Product Name">
+            <input type="text" id="updatePrice" placeholder="New Price">
+            <button onclick="updateItem()" id="updateBtn" disabled>Update Item</button>
+            
+            <h3>Delete Item</h3>
+            <input type="text" id="deleteAsin" placeholder="ASIN to delete">
+            <button onclick="deleteItem()" id="deleteBtn" disabled>Delete Item</button>
+            
+            <h3>Get All Items (Public)</h3>
+            <button onclick="getAllItems()">Get All Items</button>
+            
+            <h3>Get User Profile</h3>
+            <button onclick="getUserProfile()" id="profileBtn" disabled>Get My Profile</button>
+        </div>
+
+        <!-- Response Section -->
+        <div>
+            <h2>API Response</h2>
+            <div id="response" class="response">API responses will appear here...</div>
+        </div>
+    </div>
+
+    <script>
+        let authToken = localStorage.getItem('github_auth_token');
+        let userInfo = JSON.parse(localStorage.getItem('user_info') || 'null');
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            if (authToken && userInfo) {
+                showUserSection();
+            }
+            
+            // Check if we're returning from GitHub OAuth
+            const urlParams = new URLSearchParams(window.location.search);
+            const code = urlParams.get('code');
+            const state = urlParams.get('state');
+            
+            if (code) {
+                handleOAuthCallback(code, state);
+            }
+        });
+
+        function getApiUrl() {
+            return document.getElementById('apiUrl').value.replace(/\/$/, '');
+        }
+
+        function loginWithGitHub() {
+            const apiUrl = getApiUrl();
+            window.location.href = `${apiUrl}/auth/github`;
+        }
+
+        async function handleOAuthCallback(code, state) {
+            const apiUrl = getApiUrl();
+            try {
+                const response = await fetch(`${apiUrl}/auth/github/callback?code=${code}&state=${state}`);
+                const data = await response.json();
+                
+                if (response.ok && data.data && data.data.token) {
+                    authToken = data.data.token;
+                    userInfo = data.data.user;
+                    
+                    localStorage.setItem('github_auth_token', authToken);
+                    localStorage.setItem('user_info', JSON.stringify(userInfo));
+                    
+                    showUserSection();
+                    displayResponse(data, 'success');
+                    
+                    // Clean up URL
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                } else {
+                    displayResponse(data, 'error');
+                }
+            } catch (error) {
+                displayResponse({error: error.message}, 'error');
+            }
+        }
+
+        function logout() {
+            authToken = null;
+            userInfo = null;
+            localStorage.removeItem('github_auth_token');
+            localStorage.removeItem('user_info');
+            showLoginSection();
+            displayResponse({message: 'Logged out successfully'}, 'success');
+        }
+
+        function showUserSection() {
+            document.getElementById('loginSection').classList.add('hidden');
+            document.getElementById('userSection').classList.remove('hidden');
+            document.getElementById('userInfo').innerHTML = `
+                <strong>${userInfo.name || userInfo.username}</strong> (@${userInfo.username})<br>
+                <img src="${userInfo.avatar_url}" alt="Avatar" style="width: 50px; height: 50px; border-radius: 25px; margin-top: 10px;">
+            `;
+            
+            // Enable protected endpoint buttons
+            document.getElementById('createBtn').disabled = false;
+            document.getElementById('updateBtn').disabled = false;
+            document.getElementById('deleteBtn').disabled = false;
+            document.getElementById('profileBtn').disabled = false;
+        }
+
+        function showLoginSection() {
+            document.getElementById('loginSection').classList.remove('hidden');
+            document.getElementById('userSection').classList.add('hidden');
+            
+            // Disable protected endpoint buttons
+            document.getElementById('createBtn').disabled = true;
+            document.getElementById('updateBtn').disabled = true;
+            document.getElementById('deleteBtn').disabled = true;
+            document.getElementById('profileBtn').disabled = true;
+        }
+
+        async function makeAuthenticatedRequest(url, options = {}) {
+            const headers = {
+                'Content-Type': 'application/json',
+                ...options.headers
+            };
+            
+            if (authToken) {
+                headers['Authorization'] = `Bearer ${authToken}`;
+            }
+            
+            return fetch(url, {
+                ...options,
+                headers
+            });
+        }
+
+        async function createItem() {
+            const asin = document.getElementById('createAsin').value;
+            const name = document.getElementById('createName').value;
+            const price = document.getElementById('createPrice').value;
+            
+            if (!asin || !name || !price) {
+                displayResponse({error: 'Please fill in all fields'}, 'error');
+                return;
+            }
+            
+            try {
+                const response = await makeAuthenticatedRequest(`${getApiUrl()}/items`, {
+                    method: 'POST',
+                    body: JSON.stringify({asin, name, price})
+                });
+                
+                const data = await response.json();
+                displayResponse(data, response.ok ? 'success' : 'error');
+                
+                if (response.ok) {
+                    // Clear form
+                    document.getElementById('createAsin').value = '';
+                    document.getElementById('createName').value = '';
+                    document.getElementById('createPrice').value = '';
+                }
+            } catch (error) {
+                displayResponse({error: error.message}, 'error');
+            }
+        }
+
+        async function updateItem() {
+            const asin = document.getElementById('updateAsin').value;
+            const name = document.getElementById('updateName').value;
+            const price = document.getElementById('updatePrice').value;
+            
+            if (!asin || !name || !price) {
+                displayResponse({error: 'Please fill in all fields'}, 'error');
+                return;
+            }
+            
+            try {
+                const response = await makeAuthenticatedRequest(`${getApiUrl()}/items`, {
+                    method: 'PUT',
+                    body: JSON.stringify({asin, name, price})
+                });
+                
+                const data = await response.json();
+                displayResponse(data, response.ok ? 'success' : 'error');
+            } catch (error) {
+                displayResponse({error: error.message}, 'error');
+            }
+        }
+
+        async function deleteItem() {
+            const asin = document.getElementById('deleteAsin').value;
+            
+            if (!asin) {
+                displayResponse({error: 'Please enter an ASIN'}, 'error');
+                return;
+            }
+            
+            try {
+                const response = await makeAuthenticatedRequest(`${getApiUrl()}/items/${asin}`, {
+                    method: 'DELETE'
+                });
+                
+                const data = await response.json();
+                displayResponse(data, response.ok ? 'success' : 'error');
+                
+                if (response.ok) {
+                    document.getElementById('deleteAsin').value = '';
+                }
+            } catch (error) {
+                displayResponse({error: error.message}, 'error');
+            }
+        }
+
+        async function getAllItems() {
+            try {
+                const response = await fetch(`${getApiUrl()}/items`);
+                const data = await response.json();
+                displayResponse(data, response.ok ? 'success' : 'error');
+            } catch (error) {
+                displayResponse({error: error.message}, 'error');
+            }
+        }
+
+        async function getUserProfile() {
+            try {
+                const response = await makeAuthenticatedRequest(`${getApiUrl()}/auth/profile`);
+                const data = await response.json();
+                displayResponse(data, response.ok ? 'success' : 'error');
+            } catch (error) {
+                displayResponse({error: error.message}, 'error');
+            }
+        }
+
+        function displayResponse(data, type = 'success') {
+            const responseDiv = document.getElementById('response');
+            responseDiv.textContent = JSON.stringify(data, null, 2);
+            responseDiv.className = `response ${type}`;
+        }
+    </script>
+</body>
+</html>
