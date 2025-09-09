@@ -1,0 +1,35 @@
+{
+  "name": "items-management-frontend",
+  "version": "1.0.0",
+  "description": "Frontend web application for the Items Management System API",
+  "main": "index.html",
+  "scripts": {
+    "start": "http-server -p 8080 -c-1",
+    "dev": "http-server -p 8080 -c-1 -o",
+    "serve": "python -m http.server 8080",
+    "build": "echo 'No build process needed for static files'",
+    "test": "echo 'No tests configured yet'"
+  },
+  "keywords": [
+    "frontend",
+    "javascript",
+    "html",
+    "css",
+    "api",
+    "crud",
+    "items-management"
+  ],
+  "author": "Items Management System",
+  "license": "MIT",
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "."
+  },
+  "homepage": ".",
+  "engines": {
+    "node": ">=12.0.0"
+  }
+}
