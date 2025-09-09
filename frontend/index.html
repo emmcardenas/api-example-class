@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Items Management System</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-box"></i> Items Management System</h1>
+            <p>Manage your product inventory with ease</p>
+        </header>
+
+        <!-- API Configuration Section -->
+        <div class="config-section">
+            <div class="config-card">
+                <h3><i class="fas fa-cog"></i> API Configuration</h3>
+                <div class="input-group">
+                    <label for="apiUrl">API Base URL:</label>
+                    <input type="text" id="apiUrl" placeholder="https://your-api-gateway-url.com" value="">
+                    <button onclick="saveApiUrl()" class="btn btn-secondary">Save</button>
+                </div>
+                <div class="status-indicator">
+                    <span id="connectionStatus" class="status-disconnected">
+                        <i class="fas fa-circle"></i> Not Connected
+                    </span>
+                    <button onclick="testConnection()" class="btn btn-test">Test Connection</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add New Item Section -->
+        <div class="add-item-section">
+            <div class="card">
+                <h3><i class="fas fa-plus"></i> Add New Item</h3>
+                <form id="addItemForm">
+                    <div class="form-row">
+                        <div class="input-group">
+                            <label for="newAsin">ASIN:</label>
+                            <input type="text" id="newAsin" required placeholder="e.g., B08N5WRWNW">
+                        </div>
+                        <div class="input-group">
+                            <label for="newName">Product Name:</label>
+                            <input type="text" id="newName" required placeholder="e.g., Wireless Headphones">
+                        </div>
+                        <div class="input-group">
+                            <label for="newPrice">Price:</label>
+                            <input type="text" id="newPrice" required placeholder="e.g., $29.99">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Add Item
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Items List Section -->
+        <div class="items-section">
+            <div class="card">
+                <div class="section-header">
+                    <h3><i class="fas fa-list"></i> Items List</h3>
+                    <button onclick="loadItems()" class="btn btn-secondary">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                </div>
+                
+                <div class="search-bar">
+                    <input type="text" id="searchInput" placeholder="Search items by ASIN or name..." onkeyup="filterItems()">
+                    <i class="fas fa-search"></i>
+                </div>
+
+                <div id="loadingSpinner" class="loading-spinner" style="display: none;">
+                    <i class="fas fa-spinner fa-spin"></i> Loading items...
+                </div>
+
+                <div id="itemsContainer">
+                    <div class="no-items">
+                        <i class="fas fa-box-open"></i>
+                        <p>No items found. Add some items to get started!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Item Modal -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-edit"></i> Edit Item</h3>
+                <span class="close" onclick="closeEditModal()">&times;</span>
+            </div>
+            <form id="editItemForm">
+                <div class="input-group">
+                    <label for="editAsin">ASIN:</label>
+                    <input type="text" id="editAsin" readonly>
+                </div>
+                <div class="input-group">
+                    <label for="editName">Product Name:</label>
+                    <input type="text" id="editName" required>
+                </div>
+                <div class="input-group">
+                    <label for="editPrice">Price:</label>
+                    <input type="text" id="editPrice" required>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" onclick="closeEditModal()" class="btn btn-secondary">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Update Item
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="toast">
+        <div class="toast-content">
+            <span id="toastMessage"></span>
+            <button onclick="hideToast()" class="toast-close">&times;</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
